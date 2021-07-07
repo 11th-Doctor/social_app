@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
 
     const text = req.body.text
 
-    const post = await Post.create({
+    /*const post = await Post.create({
         text: text,
         user: req.session.userId
     }, (err, post) => {
@@ -28,7 +28,9 @@ router.post('/', async (req, res) => {
         }
 
         res.json(post)
-    })
+    })*/
+    console.log(req.body.file)
+    res.end()
 })
 
 module.exports = router
