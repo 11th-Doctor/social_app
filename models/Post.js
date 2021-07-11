@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
 
-const schema = new Schema({
+var schema = new Schema({
     text: {
         type: String
     },
@@ -17,6 +17,10 @@ const schema = new Schema({
         ref: 'User'
     }
 }, {timestamps: true})
+
+schema.virtual('id').get(function() {
+    return this._id
+})
 
 const Post = mongoose.model('Post', schema)
 

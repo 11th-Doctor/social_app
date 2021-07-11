@@ -26,6 +26,7 @@ router.post('/', async (req, res) => {
     }
 
     uploadFile(req.files.file, async (data) => {
+
         const post = await Post.create({
             text: text,
             imageUrl: data.Location,
