@@ -5,6 +5,7 @@ const port = 3000
 const db = require('./db')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
+const fileUpload = require('express-fileupload');
 
 app.use(session({
     secret: '6d235981824df090e65b108cf95c3d0b',
@@ -28,6 +29,7 @@ app.use(express.json())
 const post = require('./routes/post')
 const user = require('./routes/user')
 
+app.use(fileUpload())
 app.use('/post', post)
 app.use('/user', user)
 
