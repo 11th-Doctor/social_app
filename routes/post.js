@@ -16,19 +16,19 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-    const text = req.body.text
+    const postBody = req.body.postBody
 
-    if (req.files.file == undefined) {
+    if (req.files.imagefile == undefined) {
         res.json({
             err: 'There are no files uploaded.'
         })
         return
     }
 
-    uploadFile(req.files.file, async (data) => {
+    uploadFile(req.files.imagefile, async (data) => {
 
         const post = await Post.create({
-            text: text,
+            text: postBody,
             imageUrl: data.Location,
             user: req.session.userId
         }, (err, post) => {
