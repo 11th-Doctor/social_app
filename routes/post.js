@@ -5,7 +5,9 @@ const uploadFile = require('../uploadFile')
 
 router.get('/', async (req, res) => {
     
-    const posts = await Post.find({})
+    const userId = req.session.userId
+
+    const posts = await Post.find({user: userId})
     .populate('user',{
         password: false,
         createdAt: false,
