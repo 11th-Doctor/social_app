@@ -1,3 +1,4 @@
+const { json } = require('express')
 const express = require('express')
 const router = express.Router()
 const User = require('../models/User')
@@ -50,6 +51,29 @@ router.post('/login', async (req, res) => {
             })
         }
     })
+})
+
+router.get('/profile', async (req, res) => {
+
+    var user = null
+
+    await User.findById(req.session.userId, (err, profile) => {
+        if (err) {
+            consloe.log(err.toString())
+            return
+        }
+
+        user = profile
+    })
+
+    res.json(user)
+})
+
+router.post('/profile', (req, res) => {
+    const fullName = req.body.fullName
+    const imagefile = req.files.imagefile
+    
+    console.log(imagefile)
 })
 
 module.exports = router
