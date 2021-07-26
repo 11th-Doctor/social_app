@@ -19,6 +19,7 @@ const schema = new Schema({
     },
     profileImageUrl: {
         type: String,
+        default: ''
     },
     bio: {
         type: String

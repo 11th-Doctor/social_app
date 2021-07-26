@@ -2,15 +2,15 @@ var AWS = require('aws-sdk')
 var path = require('path')
 var uuid = require('uuid')
 
-const uploadFile = function(file, callBack) {
+const uploadFile = function(file, callBack, indexKey = null) {
     AWS.config.update({
         region: 'us-west-1',
         accessKeyId: 'AKIAJLAGUG4XRJOLP4FA',
         secretAccessKey: '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',
     })
     s3 = new AWS.S3()
-
-    const key = `${uuid.v4(file.name)}${path.extname(file.name)}`
+    
+    const key = indexKey == null ? `${uuid.v4(file.name)}${path.extname(file.name)}` : indexKey
 
     var params = {
         Bucket: 'social-app-11th-dr',

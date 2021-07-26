@@ -2,6 +2,8 @@ const { json } = require('express')
 const express = require('express')
 const router = express.Router()
 const User = require('../models/User')
+// const uploadFile = require('../uploadFile')
+const s3Helper  = require('../s3/s3Helper')
 
 router.post('/signup', async (req, res) => {
     const email = req.body.email.toLowerCase()
@@ -55,25 +57,53 @@ router.post('/login', async (req, res) => {
 
 router.get('/profile', async (req, res) => {
 
-    var user = null
-
-    await User.findById(req.session.userId, (err, profile) => {
+    await User.findById(req.session.userId, {password: false}, (err, profile) => {
         if (err) {
             consloe.log(err.toString())
             return
         }
 
-        user = profile
+        res.json(profile)
     })
-
-    res.json(user)
 })
 
-router.post('/profile', (req, res) => {
+router.post('/profile', async (req, res) => {
+    const userId = req.session.userId
     const fullName = req.body.fullName
-    const imagefile = req.files.imagefile
-    
-    console.log(imagefile)
+    var fileKey = null
+
+    await User.findById(userId, {profileImageUrl: true}, (err, data) => {
+        if (err) {
+            consloe.log(err.toString())
+            return
+        }
+
+        var path = require('path')
+        fileKey = data.profileImageUrl == '' ? null : path.basename(data.profileImageUrl)
+    })
+
+    if (req.files != undefined) {
+        const imagefile = req.files.imagefile
+
+        if (fileKey != null) {
+            s3Helper.deleteFile(fileKey, data => {
+                if (data != null) {
+                    s3Helper.uploadFile(imagefile, async data => {
+                        await User.updateOne({_id: userId}, {profileImageUrl: data.Location})
+                    })
+                } else {
+                    console.log('Failed to delete the file')
+                }
+            })
+            
+        } else {
+            s3Helper.uploadFile(imagefile, async data => {
+                await User.updateOne({_id: userId}, {profileImageUrl: data.Location})
+            })
+        }
+    }
+
+    res.json({result: 1})
 })
 
 module.exports = router
