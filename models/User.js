@@ -23,7 +23,13 @@ const schema = new Schema({
     },
     bio: {
         type: String
-    }
+    },
+    posts: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Post'
+        }
+    ]
 }, {timestamps: true})
 
 schema.pre('save', function(next) {

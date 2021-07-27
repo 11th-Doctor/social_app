@@ -1,7 +1,8 @@
 var express = require('express')
 var router = express.Router()
 const Post = require('../models/Post')
-const uploadFile = require('../uploadFile')
+const User = require('../models/User')
+const s3Helper  = require('../s3/s3Helper')
 
 router.get('/', async (req, res) => {
     
@@ -27,22 +28,23 @@ router.post('/', async (req, res) => {
         return
     }
 
-    uploadFile(req.files.imagefile, async (data) => {
+    var user = await User.findOne({_id: req.session.userId}).exec()
 
+    s3Helper.uploadFile(req.files.imagefile, async (data) => {
         const post = await Post.create({
             text: postBody,
             imageUrl: data.Location,
-            user: req.session.userId
-        }, (err, post) => {
+            user: user._id
+        }, async (err, post) => {
             if (err) {
                 console.log(err.toString())
                 return
             }
-    
+            user.posts.push(post)
+            user.save()
             res.json(post)
         })
     })
-    
 })
 
 module.exports = router

@@ -2,7 +2,6 @@ const { json } = require('express')
 const express = require('express')
 const router = express.Router()
 const User = require('../models/User')
-// const uploadFile = require('../uploadFile')
 const s3Helper  = require('../s3/s3Helper')
 
 router.post('/signup', async (req, res) => {
@@ -57,14 +56,12 @@ router.post('/login', async (req, res) => {
 
 router.get('/profile', async (req, res) => {
 
-    await User.findById(req.session.userId, {password: false}, (err, profile) => {
-        if (err) {
-            consloe.log(err.toString())
-            return
-        }
+    const profile = await User.findOne({_id: req.session.userId}, {password: false})
+    .populate('posts')
+    .exec()
 
-        res.json(profile)
-    })
+    console.log(profile)
+    res.json(profile)
 })
 
 router.post('/profile', async (req, res) => {
