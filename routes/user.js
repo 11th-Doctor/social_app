@@ -56,10 +56,16 @@ router.post('/login', async (req, res) => {
 
 router.get('/profile', async (req, res) => {
 
-    const profile = await User.findOne({_id: req.session.userId}, {password: false})
-    .populate('posts')
-    .exec()
-
+    const profile = await User.findOne({_id: '60dc826b1a9edb095e134b25'}, {password: false})
+    .populate({
+        path: 'posts',
+        model: 'Post',
+        populate: {
+            path: 'user',
+            model: 'User',
+            select: {posts: 0}
+        }
+    }).exec()
     console.log(profile)
     res.json(profile)
 })

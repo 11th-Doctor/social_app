@@ -10,11 +10,13 @@ router.get('/', async (req, res) => {
 
     const posts = await Post.find({user: userId})
     .populate('user',{
-        password: false,
-        createdAt: false,
-        updatedAt: false
+        fullName: true,
+        emailAddress: true,
+        updatedAt: true,
+        profileImageUrl: true,
     })
     .exec()
+    console.log(posts)
     res.json(posts)
 })
 
@@ -28,18 +30,20 @@ router.post('/', async (req, res) => {
         return
     }
 
-    var user = await User.findOne({_id: req.session.userId}).exec()
+    var user = await User.findOne({_id: req.session.userId},
+        {_id: 1,profileImageUrl: 1, emailAddress: 1 ,fullName: 1, updatedAt: 1, posts: 1}).exec()
 
     s3Helper.uploadFile(req.files.imagefile, async (data) => {
         const post = await Post.create({
             text: postBody,
             imageUrl: data.Location,
-            user: user._id
+            user: user
         }, async (err, post) => {
             if (err) {
                 console.log(err.toString())
                 return
             }
+            
             user.posts.push(post)
             user.save()
             res.json(post)
