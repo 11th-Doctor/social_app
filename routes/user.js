@@ -1,6 +1,7 @@
-const { json } = require('express')
 const express = require('express')
 const router = express.Router()
+var moment = require('moment')
+moment.locale('zh-TW')
 const User = require('../models/User')
 const s3Helper  = require('../s3/s3Helper')
 
@@ -56,7 +57,8 @@ router.post('/login', async (req, res) => {
 
 router.get('/profile', async (req, res) => {
 
-    const profile = await User.findOne({_id: '60dc826b1a9edb095e134b25'}, {password: false})
+    const profile = await User.findOne({_id: req.session.userId}, {password: false})
+    .lean()
     .populate({
         path: 'posts',
         model: 'Post',
@@ -66,7 +68,11 @@ router.get('/profile', async (req, res) => {
             select: {posts: 0}
         }
     }).exec()
-    console.log(profile)
+
+    profile.posts.forEach(post => {
+        post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
+    })
+    
     res.json(profile)
 })
 
@@ -107,6 +113,13 @@ router.post('/profile', async (req, res) => {
     }
 
     res.json({result: 1})
+})
+
+router.get('/search', async (req, res) => {
+    const userId = req.session.userId
+    const users = await User.find({_id: {$ne: userId}},{posts: false, password: false}).exec()
+    console.log(users)
+    res.json(users)
 })
 
 module.exports = router

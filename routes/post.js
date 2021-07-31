@@ -1,4 +1,6 @@
 var express = require('express')
+var moment = require('moment')
+moment.locale('zh-TW')
 var router = express.Router()
 const Post = require('../models/Post')
 const User = require('../models/User')
@@ -8,7 +10,8 @@ router.get('/', async (req, res) => {
     
     const userId = req.session.userId
 
-    const posts = await Post.find({user: userId})
+    var posts = await Post.find({user: userId})
+    .lean()
     .populate('user',{
         fullName: true,
         emailAddress: true,
@@ -16,7 +19,11 @@ router.get('/', async (req, res) => {
         profileImageUrl: true,
     })
     .exec()
-    console.log(posts)
+    
+    posts.forEach(post => {
+        post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
+    })
+    
     res.json(posts)
 })
 
