@@ -58,4 +58,18 @@ router.post('/', async (req, res) => {
     })
 })
 
+router.delete('/:id', async (req, res) => {
+    let postId = req.params.id
+    const post = await Post.findById(postId).exec()
+    const path = require('path')
+    const fileKey = path.basename(post.imageUrl)
+    s3Helper.deleteFile(fileKey, async data => {
+        if (data != null) {
+            await Post.deleteOne({_id: postId}).exec()
+        }
+    })
+    
+    res.end()
+})
+
 module.exports = router
