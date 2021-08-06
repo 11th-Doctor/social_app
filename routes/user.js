@@ -3,7 +3,9 @@ const router = express.Router()
 var moment = require('moment')
 moment.locale('zh-TW')
 const User = require('../models/User')
+const Following = require('../models/Following')
 const s3Helper  = require('../s3/s3Helper')
+const { find } = require('../models/User')
 
 router.post('/signup', async (req, res) => {
     const email = req.body.email.toLowerCase()
@@ -57,7 +59,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/profile', async (req, res) => {
 
-    const profile = await User.findOne({_id: req.session.userId}, {password: false})
+    const profile = await User.findOne({_id: '60dc826b1a9edb095e134b25'}, {password: false})
     .lean()
     .populate({
         path: 'posts',
@@ -65,9 +67,11 @@ router.get('/profile', async (req, res) => {
         populate: {
             path: 'user',
             model: 'User',
-            select: {posts: 0}
+            select: {password: 0, posts: 0, following: 0}
         }
-    }).exec()
+    })
+    .populate('following', {password: false})
+    .exec()
 
     profile.posts.forEach(post => {
         post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
@@ -116,10 +120,57 @@ router.post('/profile', async (req, res) => {
 })
 
 router.get('/search', async (req, res) => {
-    const userId = req.session.userId
-    const users = await User.find({_id: {$ne: userId}},{posts: false, password: false}).exec()
-    console.log(users)
+    const userId = '60dc826b1a9edb095e134b25'
+    var users = await User.find({_id: {$ne: userId}},
+        {posts: false, password: false})
+        .lean()
+        .exec()
+    
+    const followingDictionary = new Object()
+    const currentUser = await User.findById(userId).exec()
+    currentUser.following.forEach(follower => {
+        followingDictionary[follower] = follower
+    })
+
+    users.forEach(user => {
+        user.isFollowing = followingDictionary[user._id] != null
+    })
+    
     res.json(users)
+})
+
+router.post('/follow/:id', async (req, res) => {
+    const currentUserId = req.session.userId
+    const userIdToFollow = req.params.id
+    
+    await Following.create({
+        user: currentUserId,
+        userFollowed: userIdToFollow
+    }, async (err, following) => {
+        var currentUser = await User.findById(following.user).exec()
+        var userFollowed = await User.findById(following.userFollowed).exec()
+        currentUser.following.push(userFollowed)
+        currentUser.save()
+    })
+
+    console.log(`Following: ${userIdToFollow}`)
+    res.end()
+})
+
+router.post('/unfollow/:id', async (req, res) => {
+    const currentUserId = req.session.userId
+    const userIdToUnfollow = req.params.id
+
+    await Following.deleteOne({
+        user: currentUserId,
+        userFollowed: userIdToUnfollow
+    }).exec()
+
+    var currentUser = await User.findById(currentUserId).exec()
+    currentUser.following.pull({_id: userIdToUnfollow})
+    currentUser.save()
+
+    res.end()
 })
 
 module.exports = router
