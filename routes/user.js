@@ -147,13 +147,14 @@ router.post('/follow/:id', async (req, res) => {
         user: currentUserId,
         userFollowed: userIdToFollow
     }, async (err, following) => {
-        var currentUser = await User.findById(following.user).exec()
+        var currentUser = await User.findById(following.user)
+        .populate('following')
+        .exec()
         var userFollowed = await User.findById(following.userFollowed).exec()
         currentUser.following.push(userFollowed)
         currentUser.save()
     })
 
-    console.log(`Following: ${userIdToFollow}`)
     res.end()
 })
 

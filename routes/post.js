@@ -37,14 +37,13 @@ router.post('/', async (req, res) => {
         return
     }
 
-    var user = await User.findOne({_id: req.session.userId},
-        {_id: 1,profileImageUrl: 1, emailAddress: 1 ,fullName: 1, updatedAt: 1, posts: 1}).exec()
+    var user = await User.findOne({_id: req.session.userId}).exec()
 
     s3Helper.uploadFile(req.files.imagefile, async (data) => {
         const post = await Post.create({
             text: postBody,
             imageUrl: data.Location,
-            user: user
+            user: user._id
         }, async (err, post) => {
             if (err) {
                 console.log(err.toString())
@@ -69,6 +68,10 @@ router.delete('/:id', async (req, res) => {
         }
     })
     
+    var user = await User.findOne({_id: req.session.userId}).exec()
+    user.posts.pull({_id: postId})
+    user.save()
+
     res.end()
 })
 
