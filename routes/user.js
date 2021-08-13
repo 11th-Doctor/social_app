@@ -120,7 +120,7 @@ router.post('/profile', async (req, res) => {
 })
 
 router.get('/search', async (req, res) => {
-    const userId = '60dc826b1a9edb095e134b25'
+    const userId = req.session.userId
     var users = await User.find({_id: {$ne: userId}},
         {posts: false, password: false})
         .lean()
