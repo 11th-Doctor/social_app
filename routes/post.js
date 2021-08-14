@@ -49,9 +49,6 @@ router.post('/', async (req, res) => {
                 console.log(err.toString())
                 return
             }
-            
-            user.posts.push(post)
-            user.save()
             res.json(post)
         })
     })
@@ -67,10 +64,6 @@ router.delete('/:id', async (req, res) => {
             await Post.deleteOne({_id: postId}).exec()
         }
     })
-    
-    var user = await User.findOne({_id: req.session.userId}).exec()
-    user.posts.pull({_id: postId})
-    user.save()
 
     res.end()
 })

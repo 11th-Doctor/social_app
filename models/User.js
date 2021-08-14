@@ -24,18 +24,6 @@ const schema = new Schema({
     bio: {
         type: String
     },
-    posts: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Post'
-        }
-    ],
-    following: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        }
-    ]
 }, {timestamps: true})
 
 schema.pre('save', function(next) {
