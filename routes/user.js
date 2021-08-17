@@ -5,6 +5,7 @@ moment.locale('zh-TW')
 const User = require('../models/User')
 const Post = require('../models/Post')
 const Following = require('../models/Following')
+const Follower = require('../models/Follower')
 const s3Helper  = require('../s3/s3Helper')
 
 router.post('/signup', async (req, res) => {
@@ -69,12 +70,17 @@ router.get('/profile', async (req, res) => {
     .lean()
     .exec()
 
+    const following = await Following.find({user: userId}).lean()
+    const followers = await Follower.find({user: userId}).lean()
+
     profile.posts = posts
     profile.posts.forEach(post => {
         post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
     })
 
-    profile.following = await Following.countDocuments({user: userId})
+    profile.following = following.length
+    profile.followers = followers.length
+    
     res.json(profile)
 })
 
@@ -89,12 +95,20 @@ router.get('/profile/:id', async (req, res) => {
     .lean()
     .exec()
 
+    const following = await Following.find({user: userId}).lean()
+    const followers = await Follower.find({user: userId}).lean()
+
     profile.posts = posts
     profile.posts.forEach(post => {
         post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
     })
 
-    profile.following = await Following.count({user: userId})
+    profile.following = following.length
+    profile.followers = followers.length
+    var isFollowing = followers.findIndex(item => {
+        return item.follower == req.session.userId
+    })
+    profile.isFollowing = isFollowing > -1 ? true : false
 
     res.json(profile)
 })
@@ -168,6 +182,11 @@ router.post('/follow/:id', async (req, res) => {
         userFollowed: userIdToFollow
     })
 
+    await Follower.create({
+        user: userIdToFollow,
+        follower: currentUserId
+    })
+
     res.end()
 })
 
@@ -179,6 +198,11 @@ router.post('/unfollow/:id', async (req, res) => {
         user: currentUserId,
         userFollowed: userIdToUnfollow
     }).exec()
+
+    await Follower.deleteOne({
+        user: userIdToUnfollow,
+        follower: currentUserId
+    })
 
     res.end()
 })
