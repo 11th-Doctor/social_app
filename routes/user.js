@@ -7,6 +7,7 @@ const Post = require('../models/Post')
 const Following = require('../models/Following')
 const Follower = require('../models/Follower')
 const s3Helper  = require('../s3/s3Helper')
+const FeedItem = require('../models/FeedItem')
 
 router.post('/signup', async (req, res) => {
     const email = req.body.email.toLowerCase()
@@ -38,7 +39,7 @@ router.post('/login', async (req, res) => {
             console.log(err.toString())
             return
         }
-        console.log(user)
+        
         if (user === null) {
             res.json({result: false})
         } else {
@@ -51,7 +52,7 @@ router.post('/login', async (req, res) => {
                 if (isMatch) {
                     req.session.userId = user.id
                 }
-                
+                console.log(isMatch)
                 res.json({result: isMatch, userId: req.session.userId})
             })
         }
@@ -187,6 +188,19 @@ router.post('/follow/:id', async (req, res) => {
         follower: currentUserId
     })
 
+    const postsForUserImFollowing = await Post.find({user: userIdToFollow})
+    .lean()
+    .exec()
+
+    postsForUserImFollowing.forEach(async post => {
+        await FeedItem.create({
+            user: currentUserId,
+            post: post._id,
+            postOwner: userIdToFollow,
+            postCreatedAt: post.createdAt,
+        })
+    })
+
     res.end()
 })
 
@@ -203,6 +217,11 @@ router.post('/unfollow/:id', async (req, res) => {
         user: userIdToUnfollow,
         follower: currentUserId
     })
+
+    await FeedItem.deleteMany({$and: [
+        {user: currentUserId},
+        {postOwner: userIdToUnfollow}
+    ]})
 
     res.end()
 })

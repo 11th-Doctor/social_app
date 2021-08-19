@@ -4,27 +4,36 @@ moment.locale('zh-TW')
 var router = express.Router()
 const Post = require('../models/Post')
 const User = require('../models/User')
+const Follower = require('../models/Follower')
+const FeedItem = require('../models/FeedItem')
 const s3Helper  = require('../s3/s3Helper')
+const { populate } = require('../models/Post')
 
 router.get('/', async (req, res) => {
     
     const userId = req.session.userId
+    var allPosts = Array()
 
-    var posts = await Post.find({user: userId})
-    .lean()
-    .populate('user',{
+    var feedItems = await FeedItem.find({user: userId})
+    .populate('postOwner', {
         fullName: true,
         emailAddress: true,
-        updatedAt: true,
         profileImageUrl: true,
     })
+    .populate('post')
+    .lean()
     .exec()
-    
-    posts.forEach(post => {
-        post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
+
+    feedItems.forEach(item => {
+        if (item.post) {
+            item.post.user = item.postOwner
+            item.post.canDelete = item.post.user.id == userId
+            item.post.fromNow = moment(item.post.createdAt, 'YYYYMMDD').fromNow()
+            allPosts.push(item.post)
+        }
     })
     
-    res.json(posts)
+    res.json(allPosts)
 })
 
 router.post('/', async (req, res) => {
@@ -49,6 +58,25 @@ router.post('/', async (req, res) => {
                 console.log(err.toString())
                 return
             }
+
+            await FeedItem.create({
+                user: user._id,
+                post: post._id,
+                postOwner: post.user._id,
+                postCreatedAt: post.createdAt
+            })
+
+            const followers = await Follower.find({follower: user._id}).exec()
+
+            followers.forEach(async follower => {
+                await FeedItem.create({
+                    user: follower,
+                    post: post._id,
+                    postOwner: user._id,
+                    postCreatedAt: post.createdAt
+                })
+            })
+
             res.json(post)
         })
     })
@@ -61,11 +89,11 @@ router.delete('/:id', async (req, res) => {
     const fileKey = path.basename(post.imageUrl)
     s3Helper.deleteFile(fileKey, async data => {
         if (data != null) {
-            await Post.deleteOne({_id: postId}).exec()
+            await Post.deleteOne({_id: postId}, err => {
+                res.end()
+            })
         }
     })
-
-    res.end()
 })
 
 module.exports = router
