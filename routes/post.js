@@ -20,6 +20,7 @@ router.get('/', async (req, res) => {
         emailAddress: true,
         profileImageUrl: true,
     })
+    .sort({postCreatedAt: 'desc'})
     .populate('post')
     .lean()
     .exec()
@@ -27,7 +28,7 @@ router.get('/', async (req, res) => {
     feedItems.forEach(item => {
         if (item.post) {
             item.post.user = item.postOwner
-            item.post.canDelete = item.post.user.id == userId
+            item.post.canDelete = item.post.user._id == userId
             item.post.fromNow = moment(item.post.createdAt, 'YYYYMMDD').fromNow()
             allPosts.push(item.post)
         }
