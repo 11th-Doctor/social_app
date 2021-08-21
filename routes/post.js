@@ -4,10 +4,10 @@ moment.locale('zh-TW')
 var router = express.Router()
 const Post = require('../models/Post')
 const User = require('../models/User')
+const Comment = require('../models/Comment')
 const Follower = require('../models/Follower')
 const FeedItem = require('../models/FeedItem')
 const s3Helper  = require('../s3/s3Helper')
-const { populate } = require('../models/Post')
 
 router.get('/', async (req, res) => {
     
@@ -35,6 +35,21 @@ router.get('/', async (req, res) => {
     })
     
     res.json(allPosts)
+})
+
+router.get('/:id', async (req, res) => {
+    const postId = req.params.id
+
+    var comments = await Comment.find({post: postId})
+    .populate('user', '_id fullName profileImageUrl')
+    .lean()
+    .exec()
+
+    comments.forEach(comment => {
+        comment.fromNow = moment(comment.createdAt, 'YYYYMMDD').fromNow()
+    })
+
+    res.json(comments)
 })
 
 router.post('/', async (req, res) => {
