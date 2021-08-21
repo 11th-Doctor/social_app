@@ -52,7 +52,7 @@ router.post('/login', async (req, res) => {
                 if (isMatch) {
                     req.session.userId = user.id
                 }
-                console.log(isMatch)
+                
                 res.json({result: isMatch, userId: req.session.userId})
             })
         }
@@ -60,21 +60,34 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/profile', async (req, res) => {
-    let userId = req.session.userId
+    let userId = '60dc826b1a9edb095e134b25'
 
     var profile = await User.findById(userId, {password: false})
     .lean()
     .exec()
 
-    const posts = await Post.find({user: userId})
-    .populate('user','_id emailAddress fullName  profileImageUrl')
+    const allPosts = Array()
+
+    var feedItems = await FeedItem.find({user: userId})
+    .populate(
+        {   path: 'post',
+            populate: {
+                path: 'user',
+                select: '_id emailAddress fullName  profileImageUrl'
+            }
+        }
+    )
     .lean()
     .exec()
+
+    feedItems.forEach(item => {
+        allPosts.push(item.post)
+    })
 
     const following = await Following.find({user: userId}).lean()
     const followers = await Follower.find({user: userId}).lean()
 
-    profile.posts = posts
+    profile.posts = allPosts
     profile.posts.forEach(post => {
         post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
     })
