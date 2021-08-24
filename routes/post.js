@@ -30,6 +30,8 @@ router.get('/', async (req, res) => {
             item.post.user = item.postOwner
             item.post.canDelete = item.post.user._id == userId
             item.post.fromNow = moment(item.post.createdAt, 'YYYYMMDD').fromNow()
+            item.post.hasLiked = item.hasLiked
+            item.post.numLikes = item.post.numLikes
             allPosts.push(item.post)
         }
     })

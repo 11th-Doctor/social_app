@@ -29,11 +29,13 @@ app.use(express.json())
 const post = require('./routes/post')
 const user = require('./routes/user')
 const comment = require('./routes/comment')
+const like = require('./routes/like')
 
 app.use(fileUpload())
 app.use('/post', post)
 app.use('/user', user)
 app.use('/comment', comment)
+app.use('/like', like)
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
