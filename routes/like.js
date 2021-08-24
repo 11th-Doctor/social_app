@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const FeedItem = require('../models/FeedItem')
 const Like = require('../models/Like')
+const Post = require('../models/Post')
 
 router.post('/:id/like', async (req, res) => {
     postId = req.params.id
@@ -19,6 +20,10 @@ router.post('/:id/like', async (req, res) => {
                     post: postId,
                     user: userId
                 })
+
+                const numLikes = await Like.countDocuments()
+                console.log(`like: ${numLikes}`)
+                await Post.updateOne({_id: postId}, {numLikes: numLikes})
             }
         }
     })
@@ -26,8 +31,29 @@ router.post('/:id/like', async (req, res) => {
     res.end()
 })
 
-router.post('/:id/dislike', (req, res) => {
+router.post('/:id/dislike', async (req, res) => {
+    const postId = req.params.id
+    const userId = req.session.userId
 
+    await FeedItem.updateOne({
+        post: postId,
+        user: userId
+    }, {hasLiked: false}, null, async (err, res) => {
+        if (err === null) {
+            if (res.n === 1 && res.nModified === 1) {
+                await Like.deleteOne({
+                    post: postId,
+                    user: userId
+                })
+
+                const numLikes = await Like.countDocuments()
+                console.log(`like: ${numLikes}`)
+                await Post.updateOne({_id: postId}, {numLikes: numLikes})
+            }
+        }
+    })
+
+    res.end()
 })
 
 module.exports = router

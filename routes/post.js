@@ -7,6 +7,7 @@ const User = require('../models/User')
 const Comment = require('../models/Comment')
 const Follower = require('../models/Follower')
 const FeedItem = require('../models/FeedItem')
+const Like = require('../models/Like')
 const s3Helper  = require('../s3/s3Helper')
 
 router.get('/', async (req, res) => {
@@ -98,6 +99,23 @@ router.post('/', async (req, res) => {
             res.json(post)
         })
     })
+})
+
+router.get('/likes/:id', async (req, res) => {
+    const postId = req.params.id
+
+    var usersLikingPost = Array()
+
+    const likes = await Like.find({post: postId})
+    .populate('user', '_id fullName profileImageUrl emailAddress')
+    .lean()
+    .exec()
+
+    likes.forEach(like => {
+        usersLikingPost.push(like.user)
+    })
+
+    res.json(usersLikingPost)
 })
 
 router.delete('/:id', async (req, res) => {
