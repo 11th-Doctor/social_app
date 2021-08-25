@@ -5,6 +5,7 @@ var router = express.Router()
 const Post = require('../models/Post')
 const User = require('../models/User')
 const Comment = require('../models/Comment')
+const Following = require('../models/Following')
 const Follower = require('../models/Follower')
 const FeedItem = require('../models/FeedItem')
 const Like = require('../models/Like')
@@ -102,6 +103,7 @@ router.post('/', async (req, res) => {
 })
 
 router.get('/likes/:id', async (req, res) => {
+    const userId = req.session.userId
     const postId = req.params.id
 
     var usersLikingPost = Array()
@@ -111,7 +113,16 @@ router.get('/likes/:id', async (req, res) => {
     .lean()
     .exec()
 
+    const followingDictionary = new Object()
+
+    const following = await Following.find({user: userId}).lean().exec()
+    following.forEach(follower => {
+        followingDictionary[follower.userFollowed] = follower
+    })
+
     likes.forEach(like => {
+        like.user.isCurrentUser = like.user._id == userId
+        like.user.isFollowing = followingDictionary[like.user._id] != null
         usersLikingPost.push(like.user)
     })
 
