@@ -230,4 +230,21 @@ router.post('/unfollow/:id', async (req, res) => {
     res.end()
 })
 
+router.get('/following', async (req,res) => {
+    userId = req.session.userId
+
+    const following = await Following.find({user: userId})
+    .populate('userFollowed', '_id emailAddress fullName  profileImageUrl')
+    .lean()
+    .exec()
+
+    var allFollowing = Array()
+
+    following.forEach(user => {
+        allFollowing.push(user.userFollowed)
+    })
+
+    res.json(allFollowing)
+})
+
 module.exports = router
