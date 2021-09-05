@@ -67,7 +67,7 @@ router.get('/profile', async (req, res) => {
     .exec()
 
     const posts = await Post.find({user: userId})
-    .populate('user','_id emailAddress fullName  profileImageUrl')
+    .populate('user','_id emailAddress fullName  profileImageUrl bio')
     .sort({createdAt: 'desc'})
     .lean()
     .exec()
@@ -121,6 +121,7 @@ router.get('/profile/:id', async (req, res) => {
 router.post('/profile', async (req, res) => {
     const userId = req.session.userId
     const fullName = req.body.fullName
+    const bio = req.body.bio
     var fileKey = null
 
     await User.findById(userId, {profileImageUrl: true}, (err, data) => {
@@ -140,7 +141,14 @@ router.post('/profile', async (req, res) => {
             s3Helper.deleteFile(fileKey, data => {
                 if (data != null) {
                     s3Helper.uploadFile(imagefile, async data => {
-                        await User.updateOne({_id: userId}, {profileImageUrl: data.Location})
+                        await User.updateOne({_id: userId}, {
+                                profileImageUrl: data.Location, 
+                                fullName: fullName,
+                                bio: bio
+                            })
+
+                            res.json({result: 1})
+                            return
                     })
                 } else {
                     console.log('Failed to delete the file')
@@ -150,11 +158,12 @@ router.post('/profile', async (req, res) => {
         } else {
             s3Helper.uploadFile(imagefile, async data => {
                 await User.updateOne({_id: userId}, {profileImageUrl: data.Location})
+                res.json({result: 1})
+                return
             })
         }
     }
 
-    res.json({result: 1})
 })
 
 router.get('/search', async (req, res) => {
