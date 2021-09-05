@@ -37,6 +37,10 @@ app.use('/user', user)
 app.use('/comment', comment)
 app.use('/like', like)
 
+app.get('/', (req, res) => {
+    res.json({msg: `Example app listening at http://localhost:${port}`})
+})
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
