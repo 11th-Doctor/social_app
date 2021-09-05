@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 5000
 
 const db = require('./db')
 const session = require('express-session')
@@ -37,6 +37,6 @@ app.use('/user', user)
 app.use('/comment', comment)
 app.use('/like', like)
 
-app.listen(process.env.PORT || port, () => {
-    console.log(`Example app listening at http://localhost:${process.env.PORT}`)
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
 })
