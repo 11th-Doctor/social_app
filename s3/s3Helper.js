@@ -4,8 +4,8 @@ var uuid = require('uuid')
 
 AWS.config.update({
     region: 'us-west-1',
-    accessKeyId: 'AKIAJLAGUG4XRJOLP4FA',
-    secretAccessKey: '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',
+    accessKeyId: process.env.AWS_KEY,
+    secretAccessKey: process.env.AWS_SECRET,
 })
 
 s3 = new AWS.S3()

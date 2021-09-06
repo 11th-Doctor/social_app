@@ -8,7 +8,7 @@ const MongoStore = require('connect-mongo')
 const fileUpload = require('express-fileupload');
 
 app.use(session({
-    secret: '6d235981824df090e65b108cf95c3d0b',
+    secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
     cookie: {
