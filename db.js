@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const uri = "mongodb+srv://fullstackadmin:fullstackadmin111@cluster-wvpnn8jg.iyobr.mongodb.net/social_app?retryWrites=true&w=majority"
+const uri = process.env.MONGODB_URI
 
 mongoose.set('useCreateIndex', true)
 
