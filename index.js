@@ -32,6 +32,7 @@ const comment = require('./routes/comment')
 const like = require('./routes/like')
 
 app.use(fileUpload())
+app.use('/static', express.static('public'))
 app.use('/post', post)
 app.use('/user', user)
 app.use('/comment', comment)
