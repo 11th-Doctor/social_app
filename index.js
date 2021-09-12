@@ -15,7 +15,7 @@ app.use(session({
         _expires: 365 * 24 * 60 * 60 * 1000,
     },
     store: MongoStore.create({
-        mongoUrl: 'mongodb+srv://fullstackadmin:fullstackadmin111@cluster-wvpnn8jg.iyobr.mongodb.net/social_app?retryWrites=true&w=majority',
+        mongoUrl: process.env.MONGODB_URI,
         collectionName: 'sessions'
     })
 }))
