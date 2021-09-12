@@ -3,7 +3,7 @@ var path = require('path')
 var uuid = require('uuid')
 
 AWS.config.update({
-    region: 'us-west-1',
+    region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_KEY,
     secretAccessKey: process.env.AWS_SECRET,
 })
