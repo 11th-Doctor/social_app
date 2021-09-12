@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 5000
+const mongoUrl = 'mongodb+srv://'+process.env.MONGODB_USERNAME+':'+process.env.MONGODB_PASSWORD+'@'+process.env.MONGODB_DATABASE+'?retryWrites=true&w=majority'
 
 const db = require('./db')
 const session = require('express-session')
@@ -15,7 +16,7 @@ app.use(session({
         _expires: 365 * 24 * 60 * 60 * 1000,
     },
     store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,
+        mongoUrl: mongoUrl,
         collectionName: 'sessions'
     })
 }))

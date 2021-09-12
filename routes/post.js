@@ -34,6 +34,7 @@ router.get('/', async (req, res) => {
             item.post.fromNow = moment(item.post.createdAt, 'YYYYMMDD').fromNow()
             item.post.hasLiked = item.hasLiked
             item.post.numLikes = item.post.numLikes
+            // item.post.isSensitive = true
             allPosts.push(item.post)
         }
     })
