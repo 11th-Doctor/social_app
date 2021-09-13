@@ -31,6 +31,7 @@ const post = require('./routes/post')
 const user = require('./routes/user')
 const comment = require('./routes/comment')
 const like = require('./routes/like')
+const report = require('./routes/report')
 
 app.use(fileUpload())
 app.use('/static', express.static('public'))
@@ -38,6 +39,7 @@ app.use('/post', post)
 app.use('/user', user)
 app.use('/comment', comment)
 app.use('/like', like)
+app.use('/report', report)
 
 app.get('/', (req, res) => {
     res.json({msg: `Hi, there!`})

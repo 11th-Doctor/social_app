@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
             item.post.fromNow = moment(item.post.createdAt, 'YYYYMMDD').fromNow()
             item.post.hasLiked = item.hasLiked
             item.post.numLikes = item.post.numLikes
-            // item.post.isSensitive = true
+            item.post.isSensitive = item.isSensitive
             allPosts.push(item.post)
         }
     })
@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
 
             followers.forEach(async follower => {
                 await FeedItem.create({
-                    user: follower,
+                    user: follower.user,
                     post: post._id,
                     postOwner: user._id,
                     postCreatedAt: post.createdAt

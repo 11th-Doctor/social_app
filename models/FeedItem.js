@@ -20,6 +20,10 @@ var schema = new Schema({
     hasLiked: {
         type: Boolean,
         default: false
+    },
+    isSensitive: {
+        type: Boolean,
+        default: false
     }
 }, {timestamps: true})
 
