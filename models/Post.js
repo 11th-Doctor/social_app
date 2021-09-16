@@ -15,6 +15,10 @@ var schema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User'
+    },
+    isSensitive: {
+        type: Boolean,
+        default: false
     }
 }, {timestamps: true})
 

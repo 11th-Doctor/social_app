@@ -8,6 +8,7 @@ const Following = require('../models/Following')
 const Follower = require('../models/Follower')
 const s3Helper  = require('../s3/s3Helper')
 const FeedItem = require('../models/FeedItem')
+const SensitivePost = require('../models/SensitivePost')
 
 router.post('/signup', async (req, res) => {
     const email = req.body.email.toLowerCase()
@@ -79,6 +80,7 @@ router.get('/profile', async (req, res) => {
     profile.posts.forEach(post => {
         post.canDelete = true
         post.fromNow = moment(post.createdAt, 'YYYYMMDD').fromNow()
+        post.isSensitive = false
     })
 
     profile.following = following.length
@@ -205,13 +207,24 @@ router.post('/follow/:id', async (req, res) => {
     .lean()
     .exec()
 
+    const reportedcPostsDictionary = new Object()
+    
+    const sensitivePosts = await SensitivePost.find({postOwner: userIdToFollow, user: currentUserId})
+
+    sensitivePosts.forEach(post => {
+        reportedcPostsDictionary[post.post] = post
+    })
+
     postsForUserImFollowing.forEach(async post => {
-        await FeedItem.create({
-            user: currentUserId,
-            post: post._id,
-            postOwner: userIdToFollow,
-            postCreatedAt: post.createdAt,
-        })
+        if (reportedcPostsDictionary[post._id] == null) {
+            await FeedItem.create({
+                user: currentUserId,
+                post: post._id,
+                postOwner: userIdToFollow,
+                postCreatedAt: post.createdAt,
+                isSensitive: post.isSensitive
+            })
+        }
     })
 
     res.end()
