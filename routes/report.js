@@ -4,7 +4,7 @@ const SensitivePost = require('../models/SensitivePost')
 const Post = require('../models/Post')
 const FeedItem = require('../models/FeedItem')
 
-router.post('/:postId/:ownerId', async (req, res) => {
+router.post('/post/:postId/owner/:ownerId', async (req, res) => {
     const postId = req.params.postId
     const ownerId = req.params.ownerId
     const userId = req.session.userId
@@ -24,6 +24,33 @@ router.post('/:postId/:ownerId', async (req, res) => {
 
     await FeedItem.deleteOne({post: postId, user: userId})
 
+    res.end()
+})
+
+router.post('/user/:id', (req, res) => {
+
+    const userId = req.session.userId
+    const reportedUserId = req.params.id
+
+    console.log(`reportedUserId: ${reportedUserId}`)
+
+    res.end()
+})
+
+router.post('/block/:id', (req, res) => {
+    const userId = req.session.userId
+    const reportedUserId = req.params.id
+
+    console.log(`blocking...: ${reportedUserId}`)
+
+    res.end()
+})
+
+router.post('/issue', (req, res) => {
+    const userId = req.session.userId
+    const description = req.body.description
+
+    console.log(`did receive an issue: ${description}`)
     res.end()
 })
 
