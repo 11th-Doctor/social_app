@@ -15,7 +15,7 @@ router.post('/:id/like', async (req, res) => {
         if (err === null) {
             //res.n: Number of documents matched
             //res.nModified: Number of documents modified
-            if (res.n === 1 && res.nModified === 1) {
+            if (res.n === 1) {
                 await Like.create({
                     post: postId,
                     user: userId
@@ -24,6 +24,8 @@ router.post('/:id/like', async (req, res) => {
                 const numLikes = await Like.countDocuments()
                 console.log(`like: ${numLikes}`)
                 await Post.updateOne({_id: postId}, {numLikes: numLikes})
+            } else {
+                console.log(res)
             }
         }
     })
@@ -40,15 +42,17 @@ router.post('/:id/dislike', async (req, res) => {
         user: userId
     }, {hasLiked: false}, null, async (err, res) => {
         if (err === null) {
-            if (res.n === 1 && res.nModified === 1) {
+            if (res.n === 1) {
                 await Like.deleteOne({
                     post: postId,
                     user: userId
                 })
 
                 const numLikes = await Like.countDocuments()
-                console.log(`like: ${numLikes}`)
+                console.log(`dislike: ${numLikes}`)
                 await Post.updateOne({_id: postId}, {numLikes: numLikes})
+            } else {
+                console.log(res)
             }
         }
     })
